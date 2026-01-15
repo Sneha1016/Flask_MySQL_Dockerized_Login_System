@@ -1,0 +1,29 @@
+# requirements.txt for Docker Environment
+# Lists all Python packages needed for the Flask application
+
+# Flask - Web framework
+Flask==2.3.3
+
+# mysql-connector-python - MySQL database driver
+mysql-connector-python==8.1.0
+
+# Werkzeug - Provides password hashing utilities
+Werkzeug==2.3.7
+
+# requirements.txt
+# This file lists all Python packages required for the Flask application
+# Install all dependencies using: pip install -r requirements.txt
+
+# Flask - Web framework for building the application
+# Version 2.3.0 or higher provides latest features and security updates
+Flask>=2.3.0
+
+# mysql-connector-python - Official MySQL driver for Python
+# Allows Python to connect to MySQL database and execute queries
+# Version 8.0.0 or higher ensures compatibility with MySQL 8.x
+mysql-connector-python>=8.0.0
+
+# Werkzeug - WSGI utility library (comes with Flask but listed for clarity)
+# Provides password hashing functions (generate_password_hash, check_password_hash)
+# Version 2.3.0 or higher for security improvements
+Werkzeug>=2.3.0

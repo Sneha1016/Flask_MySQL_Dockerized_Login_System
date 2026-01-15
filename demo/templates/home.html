@@ -1,0 +1,160 @@
+<!-- templates/home.html -->
+<!-- This template displays the home page for logged-in users -->
+<!-- It extends base.html to inherit common layout and styling -->
+
+<!-- Extend the base template -->
+{% extends "base.html" %}
+
+<!-- Override the title block to set page-specific title -->
+{% block title %}Home - Flask Auth System{% endblock %}
+
+<!-- Override the content block with home page content -->
+{% block content %}
+<!-- Hero section with welcome message -->
+<div class="row mt-5">
+    <div class="col-12 text-center">
+        <!-- Main heading with Jinja2 template variable -->
+        <!-- username is passed from Flask route: render_template('home.html', username=session['username']) -->
+        <h1 class="display-4">Welcome, {{ username }}!</h1>
+        
+        <!-- Subheading with additional text -->
+        <p class="lead text-muted">
+            You are successfully logged in to the Flask Authentication System
+        </p>
+        
+        <!-- Horizontal rule for visual separation -->
+        <hr class="my-4">
+    </div>
+</div>
+
+<!-- Features section -->
+<div class="row mt-4">
+    <!-- Each feature is in a column -->
+    <!-- col-md-4: takes 4 columns (1/3 width) on medium+ screens -->
+    <!-- mb-4: margin bottom for spacing -->
+    
+    <!-- Feature 1: Dashboard -->
+    <div class="col-md-4 mb-4">
+        <!-- Card component for each feature -->
+        <div class="card h-100">
+            <!-- Card body with centered content -->
+            <div class="card-body text-center">
+                <!-- Icon (using Unicode character) -->
+                <div class="mb-3">
+                    <span style="font-size: 3rem;">📊</span>
+                </div>
+                
+                <!-- Feature title -->
+                <h5 class="card-title">Dashboard</h5>
+                
+                <!-- Feature description -->
+                <p class="card-text">
+                    View your profile information and account details
+                </p>
+                
+                <!-- Button to navigate to dashboard -->
+                <!-- url_for('dashboard') generates URL for dashboard route -->
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                    Go to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 2: Secure -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <!-- Security icon -->
+                <div class="mb-3">
+                    <span style="font-size: 3rem;">🔒</span>
+                </div>
+                
+                <!-- Feature title -->
+                <h5 class="card-title">Secure</h5>
+                
+                <!-- Feature description -->
+                <p class="card-text">
+                    Your password is hashed and stored securely in the database
+                </p>
+                
+                <!-- Info button (just for display) -->
+                <button class="btn btn-secondary" disabled>
+                    Protected
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 3: Session Based -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <!-- Session icon -->
+                <div class="mb-3">
+                    <span style="font-size: 3rem;">⚡</span>
+                </div>
+                
+                <!-- Feature title -->
+                <h5 class="card-title">Session Based</h5>
+                
+                <!-- Feature description -->
+                <p class="card-text">
+                    Authentication uses Flask sessions for secure user tracking
+                </p>
+                
+                <!-- Info button (just for display) -->
+                <button class="btn btn-secondary" disabled>
+                    Active Session
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Information section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <!-- Info card with light blue background -->
+        <div class="card bg-light">
+            <div class="card-body">
+                <!-- Card title -->
+                <h5 class="card-title">System Information</h5>
+                
+                <!-- List of system features -->
+                <ul class="mb-0">
+                    <!-- List item explaining session management -->
+                    <li>Your session is managed securely on the server</li>
+                    
+                    <!-- List item explaining logout functionality -->
+                    <li>You can logout anytime using the logout button in the navigation</li>
+                    
+                    <!-- List item explaining dashboard access -->
+                    <li>Access your dashboard to view detailed account information</li>
+                    
+                    <!-- List item explaining password security -->
+                    <li>Passwords are hashed using industry-standard security algorithms</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action buttons section -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <!-- Primary button to view dashboard -->
+        <!-- btn-lg: large button size -->
+        <!-- me-2: margin end (right) for spacing -->
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-2">
+            View Dashboard
+        </a>
+        
+        <!-- Secondary button to logout -->
+        <!-- btn-outline-danger: outlined red button -->
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-lg">
+            Logout
+        </a>
+    </div>
+</div>
+{% endblock %}

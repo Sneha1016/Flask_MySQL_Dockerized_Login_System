@@ -1,0 +1,163 @@
+<!-- templates/register.html -->
+<!-- This template displays the user registration form -->
+<!-- It extends base.html to inherit common layout and styling -->
+
+<!-- Extend the base template -->
+{% extends "base.html" %}
+
+<!-- Override the title block to set page-specific title -->
+{% block title %}Register - Flask Auth System{% endblock %}
+
+<!-- Override the content block with registration form -->
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <!-- Center the form using Bootstrap grid -->
+    <!-- col-md-6: takes 6 columns (half width) on medium+ screens -->
+    <!-- col-lg-4: takes 4 columns on large+ screens (narrower) -->
+    <div class="col-md-6 col-lg-4">
+        <!-- Card component for visual container -->
+        <div class="card shadow">
+            <!-- Card header with title -->
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Register</h3>
+            </div>
+            
+            <!-- Card body contains the form -->
+            <div class="card-body">
+                <!-- Registration form -->
+                <!-- method="POST": sends data securely in request body -->
+                <!-- action: specifies where to send form data (url_for generates URL) -->
+                <form method="POST" action="{{ url_for('register') }}">
+                    
+                    <!-- Username input group -->
+                    <div class="mb-3">
+                        <!-- Label for username input -->
+                        <!-- 'for' attribute links label to input using ID -->
+                        <label for="username" class="form-label">Username</label>
+                        
+                        <!-- Username input field -->
+                        <!-- type="text": accepts any text input -->
+                        <!-- class="form-control": Bootstrap styling for inputs -->
+                        <!-- id: unique identifier for this input -->
+                        <!-- name: key used to access this value in Flask (request.form['username']) -->
+                        <!-- required: HTML5 validation - prevents empty submission -->
+                        <!-- minlength: minimum characters required (3) -->
+                        <!-- maxlength: maximum characters allowed (80) -->
+                        <input type="text" 
+                               class="form-control" 
+                               id="username" 
+                               name="username" 
+                               required 
+                               minlength="3"
+                               maxlength="80"
+                               placeholder="Enter username">
+                        
+                        <!-- Help text displayed below input -->
+                        <small class="form-text text-muted">
+                            Username must be 3-80 characters
+                        </small>
+                    </div>
+
+                    <!-- Email input group -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        
+                        <!-- Email input field -->
+                        <!-- type="email": HTML5 validation for email format -->
+                        <!-- Browser checks for @ symbol and valid email structure -->
+                        <input type="email" 
+                               class="form-control" 
+                               id="email" 
+                               name="email" 
+                               required 
+                               maxlength="120"
+                               placeholder="Enter email">
+                    </div>
+
+                    <!-- Password input group -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        
+                        <!-- Password input field -->
+                        <!-- type="password": masks input characters (shows dots) -->
+                        <!-- minlength="6": requires at least 6 characters for security -->
+                        <input type="password" 
+                               class="form-control" 
+                               id="password" 
+                               name="password" 
+                               required 
+                               minlength="6"
+                               placeholder="Enter password">
+                        
+                        <!-- Help text for password requirements -->
+                        <small class="form-text text-muted">
+                            Password must be at least 6 characters
+                        </small>
+                    </div>
+
+                    <!-- Confirm Password input group -->
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password</label>
+                        
+                        <!-- Confirm password input -->
+                        <!-- Used for client-side validation (matched via JavaScript) -->
+                        <input type="password" 
+                               class="form-control" 
+                               id="confirm_password" 
+                               name="confirm_password" 
+                               required 
+                               minlength="6"
+                               placeholder="Confirm password">
+                    </div>
+
+                    <!-- Submit button -->
+                    <!-- type="submit": triggers form submission -->
+                    <!-- btn-primary: Bootstrap primary color (blue) -->
+                    <!-- w-100: full width -->
+                    <button type="submit" class="btn btn-primary w-100">
+                        Register
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Card footer with link to login page -->
+            <div class="card-footer text-center">
+                <!-- Paragraph with link for existing users -->
+                <p class="mb-0">
+                    Already have an account? 
+                    <!-- Link to login page using url_for -->
+                    <a href="{{ url_for('login') }}">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for client-side password validation -->
+<script>
+    // Get reference to the registration form
+    // querySelector finds first element matching CSS selector
+    const form = document.querySelector('form');
+    
+    // Add event listener for form submission
+    // 'submit' event fires when user clicks submit button
+    form.addEventListener('submit', function(event) {
+        // Get password input values
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        // Check if passwords match
+        if (password !== confirmPassword) {
+            // Prevent form submission if passwords don't match
+            event.preventDefault();
+            
+            // Display alert to user
+            alert('Passwords do not match!');
+            
+            // Return false to stop form submission
+            return false;
+        }
+        // If passwords match, form submits normally
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,212 @@
+<!-- templates/dashboard.html -->
+<!-- This template displays user profile and account information -->
+<!-- It extends base.html to inherit common layout and styling -->
+
+<!-- Extend the base template -->
+{% extends "base.html" %}
+
+<!-- Override the title block to set page-specific title -->
+{% block title %}Dashboard - Flask Auth System{% endblock %}
+
+<!-- Override the content block with dashboard content -->
+{% block content %}
+<!-- Page header -->
+<div class="row mt-4">
+    <div class="col-12">
+        <!-- Main heading -->
+        <h2>User Dashboard</h2>
+        
+        <!-- Subtitle text -->
+        <p class="text-muted">View and manage your account information</p>
+        
+        <!-- Horizontal rule for visual separation -->
+        <hr>
+    </div>
+</div>
+
+<!-- Dashboard content -->
+<div class="row mt-4">
+    <!-- Left column - Profile Information -->
+    <!-- col-md-6: takes 6 columns (half width) on medium+ screens -->
+    <div class="col-md-6 mb-4">
+        <!-- Card for profile information -->
+        <div class="card">
+            <!-- Card header with icon and title -->
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    👤 Profile Information
+                </h5>
+            </div>
+            
+            <!-- Card body with user details -->
+            <div class="card-body">
+                <!-- List group for displaying user information -->
+                <!-- list-group-flush: removes outer borders for cleaner look -->
+                <ul class="list-group list-group-flush">
+                    
+                    <!-- User ID list item -->
+                    <li class="list-group-item">
+                        <!-- Label with bold text -->
+                        <strong>User ID:</strong>
+                        <!-- Display user ID from 'user' dictionary -->
+                        <!-- 'user' is passed from Flask: render_template('dashboard.html', user=user) -->
+                        <span class="float-end">{{ user.id }}</span>
+                    </li>
+                    
+                    <!-- Username list item -->
+                    <li class="list-group-item">
+                        <strong>Username:</strong>
+                        <!-- Display username -->
+                        <!-- float-end: floats the value to the right side -->
+                        <span class="float-end">{{ user.username }}</span>
+                    </li>
+                    
+                    <!-- Email list item -->
+                    <li class="list-group-item">
+                        <strong>Email:</strong>
+                        <!-- Display email address -->
+                        <span class="float-end">{{ user.email }}</span>
+                    </li>
+                    
+                    <!-- Account creation date list item -->
+                    <li class="list-group-item">
+                        <strong>Member Since:</strong>
+                        <!-- Display account creation timestamp -->
+                        <!-- created_at comes from database TIMESTAMP field -->
+                        <span class="float-end">{{ user.created_at }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right column - Account Statistics -->
+    <div class="col-md-6 mb-4">
+        <!-- Card for account statistics -->
+        <div class="card">
+            <!-- Card header -->
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    📈 Account Statistics
+                </h5>
+            </div>
+            
+            <!-- Card body with stats -->
+            <div class="card-body">
+                <!-- Row for stat cards -->
+                <div class="row text-center">
+                    
+                    <!-- Stat 1: Account Status -->
+                    <!-- col-6: takes half width -->
+                    <div class="col-6 mb-3">
+                        <!-- Card for individual stat -->
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <!-- Stat icon -->
+                                <div style="font-size: 2rem;">✅</div>
+                                <!-- Stat label -->
+                                <h6 class="mt-2">Status</h6>
+                                <!-- Stat value -->
+                                <p class="text-success mb-0"><strong>Active</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stat 2: Account Type -->
+                    <div class="col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <!-- Stat icon -->
+                                <div style="font-size: 2rem;">🏷️</div>
+                                <!-- Stat label -->
+                                <h6 class="mt-2">Account Type</h6>
+                                <!-- Stat value -->
+                                <p class="text-primary mb-0"><strong>Standard</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stat 3: Security Level -->
+                    <div class="col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <!-- Stat icon -->
+                                <div style="font-size: 2rem;">🔐</div>
+                                <!-- Stat label -->
+                                <h6 class="mt-2">Security</h6>
+                                <!-- Stat value -->
+                                <p class="text-success mb-0"><strong>Protected</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stat 4: Login Sessions -->
+                    <div class="col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <!-- Stat icon -->
+                                <div style="font-size: 2rem;">🔑</div>
+                                <!-- Stat label -->
+                                <h6 class="mt-2">Sessions</h6>
+                                <!-- Stat value -->
+                                <p class="text-info mb-0"><strong>1 Active</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Security Information Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <!-- Alert box with security information -->
+        <!-- alert-info: light blue informational alert -->
+        <div class="alert alert-info">
+            <!-- Alert heading -->
+            <h5 class="alert-heading">🔒 Security Information</h5>
+            
+            <!-- Alert content -->
+            <p class="mb-0">
+                Your account is protected with industry-standard security measures:
+            </p>
+            
+            <!-- List of security features -->
+            <ul class="mt-2 mb-0">
+                <!-- Password hashing info -->
+                <li>Password is hashed using PBKDF2-SHA256 algorithm</li>
+                
+                <!-- Session security info -->
+                <li>Session data is encrypted and stored securely</li>
+                
+                <!-- MySQL security info -->
+                <li>Database uses MySQL with secure connection protocols</li>
+                
+                <!-- Best practice info -->
+                <li>Unique username and email constraints prevent duplicates</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons Section -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <!-- Button to return to home page -->
+        <!-- btn-primary: Bootstrap primary color (blue) -->
+        <!-- btn-lg: large button size -->
+        <!-- me-2: margin end (right) for spacing between buttons -->
+        <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-2">
+            Back to Home
+        </a>
+        
+        <!-- Button to logout -->
+        <!-- btn-danger: red button for destructive action -->
+        <a href="{{ url_for('logout') }}" class="btn btn-danger btn-lg">
+            Logout
+        </a>
+    </div>
+</div>
+{% endblock %}

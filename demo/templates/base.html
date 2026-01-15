@@ -1,0 +1,145 @@
+<!-- templates/base.html -->
+<!-- This is the base template that other templates will extend -->
+<!-- It contains common HTML structure, CSS, and navigation -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta tags for character encoding and responsive design -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Page title - will be overridden by child templates -->
+    <title>{% block title %}Flask Auth System{% endblock %}</title>
+    
+    <!-- Bootstrap CSS CDN for styling -->
+    <!-- Bootstrap provides pre-built CSS classes for responsive design -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS styles -->
+    <style>
+        /* Style for body element - sets minimum height and flexbox */
+        body {
+            min-height: 100vh; /* 100% of viewport height */
+            display: flex;      /* Use flexbox layout */
+            flex-direction: column; /* Stack children vertically */
+        }
+        
+        /* Style for main content area - makes it grow to fill space */
+        .content {
+            flex: 1; /* Takes up remaining space */
+            padding: 20px; /* Add spacing around content */
+        }
+        
+        /* Style for flash messages container */
+        .flash-messages {
+            margin-top: 20px; /* Space above messages */
+        }
+        
+        /* Style for navigation bar */
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1); /* Subtle shadow effect */
+        }
+        
+        /* Style for footer */
+        footer {
+            background-color: #f8f9fa; /* Light gray background */
+            padding: 20px 0; /* Vertical padding */
+            text-align: center; /* Center align text */
+            margin-top: auto; /* Push to bottom */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation bar -->
+    <!-- navbar-expand-lg: makes navbar responsive on large screens -->
+    <!-- navbar-light: light color scheme -->
+    <!-- bg-light: light background color -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <!-- Brand/logo that links to home page -->
+            <!-- url_for generates URL for the 'index' route -->
+            <a class="navbar-brand" href="{{ url_for('index') }}">Flask Auth</a>
+            
+            <!-- Toggle button for mobile menu -->
+            <!-- data-bs-toggle: tells Bootstrap to handle collapse behavior -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Collapsible navbar content -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Right-aligned navigation links -->
+                <ul class="navbar-nav ms-auto">
+                    <!-- Check if user is logged in using session variable -->
+                    {% if session.user_id %}
+                        <!-- Links shown only when user is logged in -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <!-- Display username in navbar -->
+                            <span class="nav-link">Hello, {{ session.username }}!</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    {% else %}
+                        <!-- Links shown only when user is not logged in -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content area -->
+    <div class="content">
+        <div class="container">
+            <!-- Flash messages section -->
+            <!-- Displays success/error/info messages stored using flash() -->
+            <div class="flash-messages">
+                <!-- get_flashed_messages returns list of messages with categories -->
+                <!-- with_categories=true includes message category (success, danger, etc) -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    <!-- Check if there are any messages to display -->
+                    {% if messages %}
+                        <!-- Loop through each message -->
+                        {% for category, message in messages %}
+                            <!-- Create Bootstrap alert for each message -->
+                            <!-- category determines alert color (success=green, danger=red) -->
+                            <!-- alert-dismissible allows closing the alert -->
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }} <!-- Display the message text -->
+                                <!-- Close button for alert -->
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+            
+            <!-- Content block - child templates will insert content here -->
+            <!-- This is where page-specific content will appear -->
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <!-- Copyright text with current year -->
+            <p class="mb-0">&copy; 2024 Flask Auth System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JavaScript Bundle (includes Popper) -->
+    <!-- Required for interactive Bootstrap components like dropdowns, modals -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
