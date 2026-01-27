@@ -21,8 +21,8 @@ pipeline {
             steps {
                 sh '''
                   cd demo
-                  docker-compose down || true
-                  docker-compose up -d
+                  docker compose down || true
+                  docker compose up -d
                 '''
             }
         }
