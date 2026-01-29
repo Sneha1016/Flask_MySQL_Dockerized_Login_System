@@ -15,9 +15,8 @@ pipeline {
         ECR_URI   = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
         IMAGE_TAG = "build-${BUILD_NUMBER}"
 
-        CFT_DIR      = 'CFT'
-        S3_BUCKET    = 'my-cloudformation-bucket11111'
-        STACK_NAME   = 'parent-stack'
+        DEPLOY_HOST = "ec2-user@13.232.141.8"
+        DEPLOY_DIR  = "/opt/flask-app"
     }
 
     stages {
@@ -30,84 +29,47 @@ pipeline {
             }
         }
 
-        stage('Upload CloudFormation Templates to S3') {
-            steps {
-                withAWS(credentials: 'aws-credentials', region: AWS_REGION) {
-                    sh """
-                      aws s3 sync ${CFT_DIR} s3://${S3_BUCKET}/cloudformation --delete
-                    """
-                }
-            }
-        }
-
         stage('Login to Amazon ECR') {
             steps {
                 withAWS(credentials: 'aws-credentials', region: AWS_REGION) {
-                    sh """
+                    sh '''
                       aws ecr get-login-password --region ${AWS_REGION} \
                       | docker login --username AWS --password-stdin ${ECR_URI}
-                    """
+                    '''
                 }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh """
+                sh '''
+                  cd demo
                   docker build -t ${REPO_NAME}:${IMAGE_TAG} .
                   docker tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}
-                """
+                '''
             }
         }
 
         stage('Push Image to ECR') {
             steps {
-                sh """
+                sh '''
                   docker push ${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}
-                """
+                '''
             }
         }
 
-        stage('Deploy CloudFormation Stack') {
+        stage('Deploy on EC2 using Docker Compose') {
             steps {
-                withAWS(credentials: 'aws-credentials', region: AWS_REGION) {
-                    script {
-                        def stackStatus = sh(
-                            script: """
-                              aws cloudformation describe-stacks \
-                              --stack-name ${STACK_NAME} \
-                              --query 'Stacks[0].StackStatus' \
-                              --output text || echo NOT_FOUND
-                            """,
-                            returnStdout: true
-                        ).trim()
-
-                        if (stackStatus == "NOT_FOUND") {
-                            echo "Creating CloudFormation stack..."
-                            sh """
-                              aws cloudformation create-stack \
-                              --stack-name ${STACK_NAME} \
-                              --template-url https://s3.${AWS_REGION}.amazonaws.com/${S3_BUCKET}/cloudformation/parent.yaml \
-                              --capabilities CAPABILITY_NAMED_IAM
-                            """
-                            sh """
-                              aws cloudformation wait stack-create-complete \
-                              --stack-name ${STACK_NAME}
-                            """
-                        } else {
-                            echo "Updating CloudFormation stack..."
-                            sh """
-                              aws cloudformation update-stack \
-                              --stack-name ${STACK_NAME} \
-                              --template-url https://s3.${AWS_REGION}.amazonaws.com/${S3_BUCKET}/cloudformation/parent.yaml \
-                              --capabilities CAPABILITY_NAMED_IAM || echo "No changes"
-                            """
-                            sh """
-                              aws cloudformation wait stack-update-complete \
-                              --stack-name ${STACK_NAME}
-                            """
-                        }
-                    }
+                sshagent(credentials: ['ec2-ssh-key']) {
+                    sh '''
+                      ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} "
+                        cd ${DEPLOY_DIR}
+                        export IMAGE_TAG=${IMAGE_TAG}
+                        export ECR_URI=${ECR_URI}
+                        docker compose pull
+                        docker compose up -d
+                      "
+                    '''
                 }
             }
         }
@@ -115,16 +77,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Pipeline completed successfully"
-            echo "Image pushed: ${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}"
+            echo "✅ Jenkins CI/CD pipeline completed successfully"
         }
-
         failure {
             echo "❌ Pipeline failed"
-        }
-
-        cleanup {
-            sh "docker system prune -f || true"
         }
     }
 }
