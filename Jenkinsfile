@@ -1,4 +1,5 @@
 pipeline {
+
     agent any
 
     options {
@@ -31,13 +32,13 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-credentials', region: AWS_REGION) {
                     sh '''
-                      aws ecr describe-repositories \
-                        --repository-names ${REPO_NAME} \
-                        --region ${AWS_REGION} \
-                      || aws ecr create-repository \
-                        --repository-name ${REPO_NAME} \
-                        --region ${AWS_REGION}
-                    '''
+aws ecr describe-repositories \
+  --repository-names ${REPO_NAME} \
+  --region ${AWS_REGION} \
+|| aws ecr create-repository \
+  --repository-name ${REPO_NAME} \
+  --region ${AWS_REGION}
+'''
                 }
             }
         }
@@ -46,9 +47,9 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-credentials', region: AWS_REGION) {
                     sh '''
-                      aws ecr get-login-password --region ${AWS_REGION} \
-                      | docker login --username AWS --password-stdin ${ECR_URI}
-                    '''
+aws ecr get-login-password --region ${AWS_REGION} \
+| docker login --username AWS --password-stdin ${ECR_URI}
+'''
                 }
             }
         }
@@ -56,18 +57,18 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                  cd demo
-                  docker build -t ${REPO_NAME}:${IMAGE_TAG} .
-                  docker tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}
-                '''
+cd demo
+docker build -t ${REPO_NAME}:${IMAGE_TAG} .
+docker tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}
+'''
             }
         }
 
         stage('Push Image to ECR') {
             steps {
                 sh '''
-                  docker push ${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}
-                '''
+docker push ${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}
+'''
             }
         }
 
@@ -78,28 +79,28 @@ pipeline {
 
                         def ami = sh(
                             script: """
-                              aws ssm get-parameter \
-                              --name /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
-                              --region ${AWS_REGION} \
-                              --query Parameter.Value \
-                              --output text
-                            """,
+aws ssm get-parameter \
+--name /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
+--region ${AWS_REGION} \
+--query Parameter.Value \
+--output text
+""",
                             returnStdout: true
                         ).trim()
 
                         def instanceId = sh(
                             script: """
-                              aws ec2 run-instances \
-                              --image-id ${ami} \
-                              --instance-type t3.micro \
-                              --count 1 \
-                              --key-name jenkins-flask \
-                              --security-group-ids sg-053b498bb18d4d57a \
-                              --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Flask-App-EC2}]' \
-                              --user-data file://user-data.sh \
-                              --query 'Instances[0].InstanceId' \
-                              --output text
-                            """,
+aws ec2 run-instances \
+--image-id ${ami} \
+--instance-type t3.micro \
+--count 1 \
+--key-name jenkins-flask \
+--security-group-ids sg-053b498bb18d4d57a \
+--tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Flask-App-EC2}]' \
+--user-data file://user-data.sh \
+--query 'Instances[0].InstanceId' \
+--output text
+""",
                             returnStdout: true
                         ).trim()
 
@@ -109,12 +110,12 @@ pipeline {
 
                         def publicIp = sh(
                             script: """
-                              aws ec2 describe-instances \
-                              --instance-ids ${instanceId} \
-                              --region ${AWS_REGION} \
-                              --query 'Reservations[0].Instances[0].PublicIpAddress' \
-                              --output text
-                            """,
+aws ec2 describe-instances \
+--instance-ids ${instanceId} \
+--region ${AWS_REGION} \
+--query 'Reservations[0].Instances[0].PublicIpAddress' \
+--output text
+""",
                             returnStdout: true
                         ).trim()
 
@@ -126,10 +127,10 @@ pipeline {
         }
 
         stage('Deploy on Flask EC2') {
-    steps {
-        sshagent(credentials: ['ec2-ssh-key']) {
+            steps {
+                sshagent(credentials: ['ec2-ssh-key']) {
 
-            sh '''
+                    sh '''
 ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} "
 
   echo 'Waiting for docker...'
@@ -167,4 +168,5 @@ ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} "
             echo "❌ Pipeline failed"
         }
     }
+
 }
