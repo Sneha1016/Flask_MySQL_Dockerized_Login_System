@@ -92,7 +92,7 @@ pipeline {
                             script: """
                               aws ec2 run-instances \
                                 --image-id ${ami} \
-                                --instance-type t2.micro \
+                                --instance-type t3.micro \
                                 --count 1 \
                                 --key-name jenkins-flask \
                                 --security-group-ids sg-053b498bb18d4d57a \
