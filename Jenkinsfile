@@ -74,44 +74,44 @@ pipeline {
         }
 
         stage('Deploy on Flask EC2') {
-            steps {
-                sshagent(credentials: ['ec2-ssh-key']) {
+    steps {
+        sshagent(credentials: ['ec2-ssh-key']) {
 
-                    sh '''
-ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} "
+            sh '''
+ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} '
 
-  set -e
+set -e
 
-  sudo mkdir -p ${DEPLOY_DIR}
-  sudo chown ec2-user:ec2-user ${DEPLOY_DIR}
+# make deploy dir
+sudo mkdir -p /opt/flask-app
+sudo chown ec2-user:ec2-user /opt/flask-app
 
-  if ! command -v docker >/dev/null 2>&1; then
-    echo 'Docker not found'
-    exit 1
-  fi
+# install docker-compose if missing
+if ! command -v docker-compose >/dev/null 2>&1; then
+  echo "Installing docker-compose..."
+  sudo curl -L https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64 \
+    -o /usr/local/bin/docker-compose
+  sudo chmod +x /usr/local/bin/docker-compose
+fi
 
-  if ! command -v aws >/dev/null 2>&1; then
-    echo 'AWS CLI not found'
-    exit 1
-  fi
+cd /opt/flask-app
 
-  cd ${DEPLOY_DIR}
+export IMAGE_TAG=${IMAGE_TAG}
+export ECR_URI=${ECR_URI}
 
-  export IMAGE_TAG=${IMAGE_TAG}
-  export ECR_URI=${ECR_URI}
+aws ecr get-login-password --region ${AWS_REGION} | \
+docker login --username AWS --password-stdin ${ECR_URI}
 
-  aws ecr get-login-password --region ${AWS_REGION} | \
-    docker login --username AWS --password-stdin ${ECR_URI}
+docker-compose pull
+docker-compose up -d
 
-  docker compose pull
-  docker compose up -d
-"
+'
 '''
-                }
-            }
         }
     }
+}
 
+}
     post {
         success {
             echo "✅ Jenkins → ECR → Flask server deployment completed"
