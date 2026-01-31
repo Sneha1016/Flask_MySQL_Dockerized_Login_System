@@ -9,7 +9,7 @@ pipeline {
     environment {
 
         AWS_REGION     = 'ap-south-1'
-        AWS_ACCOUNT_ID = '349036691344'   // ✅ your Neha account
+        AWS_ACCOUNT_ID = '349036691344'
         REPO_NAME      = 'my-app'
 
         ECR_URI   = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
@@ -78,56 +78,50 @@ pipeline {
                     script {
 
                         def ami = sh(
-                            script: '''
+                            script: """
                               aws ssm get-parameter \
-                                --name /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
-                                --region ap-south-1 \
-                                --query "Parameter.Value" \
-                                --output text
-                            ''',
+                              --name /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
+                              --region ${AWS_REGION} \
+                              --query Parameter.Value \
+                              --output text
+                            """,
                             returnStdout: true
                         ).trim()
 
                         def instanceId = sh(
                             script: """
                               aws ec2 run-instances \
-                                --image-id ${ami} \
-                                --instance-type t3.micro \
-                                --count 1 \
-                                --key-name jenkins-flask \
-                                --security-group-ids sg-053b498bb18d4d57a \
-                                --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Flask-App-EC2}]' \
-                                --user-data '#!/bin/bash
---user-data '#!/bin/bash
-dnf update -y
-dnf install docker -y
-dnf install awscli -y
-systemctl start docker
-systemctl enable docker
-usermod -aG docker ec2-user
-curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-' \
-                                --query 'Instances[0].InstanceId' \
-                                --output text
+                              --image-id ${ami} \
+                              --instance-type t3.micro \
+                              --count 1 \
+                              --key-name jenkins-flask \
+                              --security-group-ids sg-053b498bb18d4d57a \
+                              --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Flask-App-EC2}]' \
+                              --user-data file://user-data.sh \
+                              --query 'Instances[0].InstanceId' \
+                              --output text
                             """,
                             returnStdout: true
                         ).trim()
+
+                        echo "Flask instance id = ${instanceId}"
 
                         sh "aws ec2 wait instance-running --instance-ids ${instanceId} --region ${AWS_REGION}"
 
                         def publicIp = sh(
                             script: """
                               aws ec2 describe-instances \
-                                --instance-ids ${instanceId} \
-                                --region ${AWS_REGION} \
-                                --query 'Reservations[0].Instances[0].PublicIpAddress' \
-                                --output text
+                              --instance-ids ${instanceId} \
+                              --region ${AWS_REGION} \
+                              --query 'Reservations[0].Instances[0].PublicIpAddress' \
+                              --output text
                             """,
                             returnStdout: true
                         ).trim()
 
                         env.DEPLOY_HOST = "ec2-user@${publicIp}"
+
+                        echo "Deploy host = ${env.DEPLOY_HOST}"
                     }
                 }
             }
@@ -135,7 +129,6 @@ chmod +x /usr/local/bin/docker-compose
 
         stage('Deploy on Flask EC2') {
             steps {
-
                 sshagent(credentials: ['ec2-ssh-key']) {
 
                     sh '''

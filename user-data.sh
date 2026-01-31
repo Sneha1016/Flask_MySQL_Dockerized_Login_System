@@ -1,6 +1,8 @@
 #!/bin/bash
 dnf update -y
+
 dnf install docker -y
+dnf install awscli -y
 
 systemctl start docker
 systemctl enable docker
