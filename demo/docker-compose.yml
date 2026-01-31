@@ -1,128 +1,61 @@
-# docker-compose.yml
-# This file defines and configures multiple Docker containers
-# It allows us to run Flask app and MySQL database together
-
-# Specify Docker Compose file format version
 version: '3.8'
 
-# Define the services (containers) that make up our application
 services:
-  
-  # MySQL Database Service
-  # This container runs the MySQL database server
+
   db:
-    # Use official MySQL 8.0 image from Docker Hub
     image: mysql:8.0
-    
-    # Container name for easy identification
     container_name: flask_mysql_db
-    
-    # Restart policy - always restart container if it stops
-    # Ensures database is always available
     restart: always
-    
-    # Environment variables to configure MySQL
+
     environment:
-      # Root password for MySQL (CHANGE THIS IN PRODUCTION!)
       MYSQL_ROOT_PASSWORD: rootpassword
-      
-      # Create a database named 'flask_auth_db' on container startup
       MYSQL_DATABASE: flask_auth_db
-      
-      # Create a user named 'flask_user'
       MYSQL_USER: flask_user
-      
-      # Password for flask_user
       MYSQL_PASSWORD: flask_password
-    
-    # Port mapping: host_port:container_port
-    # Maps port 3307 on host to port 3306 in container
-    # Using 3307 to avoid conflict if MySQL is installed on host
+
     ports:
       - "3307:3306"
-    
-    # Volume to persist database data
-    # Data stored in 'mysql_data' volume won't be lost when container stops
+
     volumes:
       - mysql_data:/var/lib/mysql
-      # Mount initialization script to create users table
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    
-    # Network configuration
-    # Both containers will be on 'flask-network' to communicate
+
     networks:
       - flask-network
-    
-    # Health check to ensure MySQL is ready before Flask connects
-    # Tests connection every 10 seconds
+
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Flask Web Application Service
-  # This container runs our Flask application
+
   web:
-    # Build image from Dockerfile in current directory
-    # Docker will look for 'Dockerfile' and build the image
     image: ${ECR_URI}/my-app:${IMAGE_TAG}
-    
-    # Container name for easy identification
     container_name: flask_web_app
-    
-    # Restart policy
     restart: always
-    
-    # Port mapping: host_port:container_port
-    # Maps port 5000 on host to port 5000 in container
-    # Access app at http://localhost:5000
+
     ports:
       - "5000:5000"
-    
-    # Environment variables for Flask application
+
     environment:
-      # Database host - must match service name 'db'
-      # Docker Compose creates internal DNS, so 'db' resolves to database container
       DB_HOST: db
-      
-      # Database name - must match MYSQL_DATABASE in db service
       DB_NAME: flask_auth_db
-      
-      # Database user - must match MYSQL_USER in db service
       DB_USER: flask_user
-      
-      # Database password - must match MYSQL_PASSWORD in db service
       DB_PASSWORD: flask_password
-      
-      # Database port - MySQL default port
       DB_PORT: 3306
-    
-    # Dependencies - ensures database starts before Flask app
-    # depends_on with condition ensures MySQL is healthy before starting Flask
+
     depends_on:
-      db:
-        condition: service_healthy
-    
-    # Network configuration
+      - db
+
     networks:
       - flask-network
-    
-    # Mount current directory to /app in container
-    # Changes to code on host reflect immediately in container (for development)
-    volumes:
-      - .:/app
 
-# Define named volumes for data persistence
+
 volumes:
-  # Volume to store MySQL data
-  # Data persists even if containers are removed
   mysql_data:
-    driver: local
 
-# Define custom network for container communication
+
 networks:
-  # Custom bridge network
-  # Allows containers to communicate using service names
   flask-network:
     driver: bridge
