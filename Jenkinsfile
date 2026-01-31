@@ -153,9 +153,11 @@ ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} "
   docker compose up -d
 "
 '''
+                }
+            }
         }
+
     }
-}
 
     post {
         success {
