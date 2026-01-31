@@ -274,24 +274,18 @@ def health():
 
 # Main execution block
 if __name__ == '__main__':
-    # Print startup message
+
     print("Starting Flask application...")
     print(f"Database host: {DB_CONFIG['host']}")
     print(f"Database name: {DB_CONFIG['database']}")
-    
-    # Wait a moment for database to be ready
+
     time.sleep(2)
-    
-    # Test database connection
+
     test_conn = get_db_connection()
     if test_conn:
         print("Database connection successful!")
         test_conn.close()
     else:
         print("Warning: Could not connect to database on startup")
-    
-    # Run Flask application
-    # host='0.0.0.0' makes it accessible from outside container
-    # port=5000 is the default Flask port
-    # debug=True enables auto-reload and detailed errors (disable in production)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+
+    app.run(host='0.0.0.0', port=5000, debug=False)
