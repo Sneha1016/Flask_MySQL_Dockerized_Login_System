@@ -126,34 +126,36 @@ pipeline {
         }
 
         stage('Deploy on Flask EC2') {
-            steps {
-                sshagent(credentials: ['ec2-ssh-key']) {
+    steps {
+        sshagent(credentials: ['ec2-ssh-key']) {
 
-                    // ✅ FIXED PERMISSION ISSUE
-                    sh '''
-                      ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} \
-                      "sudo mkdir -p ${DEPLOY_DIR} && sudo chown ec2-user:ec2-user ${DEPLOY_DIR}"
-                    '''
+            sh '''
+ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} "
 
-                    sh '''
-                      scp -o StrictHostKeyChecking=no demo/docker-compose.yml \
-                      ${DEPLOY_HOST}:${DEPLOY_DIR}/
-                    '''
+  echo 'Waiting for docker...'
+  until command -v docker >/dev/null 2>&1; do sleep 5; done
 
-                    sh '''
-                      ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} "
-                        cd ${DEPLOY_DIR}
-                        export IMAGE_TAG=${IMAGE_TAG}
-                        export ECR_URI=${ECR_URI}
-                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_URI}
-                        docker-compose pull
-                        docker-compose up -d
-                      "
-                    '''
-                }
-            }
+  echo 'Waiting for aws...'
+  until command -v aws >/dev/null 2>&1; do sleep 5; done
+
+  sudo mkdir -p ${DEPLOY_DIR}
+  sudo chown ec2-user:ec2-user ${DEPLOY_DIR}
+
+  cd ${DEPLOY_DIR}
+
+  export IMAGE_TAG=${IMAGE_TAG}
+  export ECR_URI=${ECR_URI}
+
+  aws ecr get-login-password --region ${AWS_REGION} | \
+    docker login --username AWS --password-stdin ${ECR_URI}
+
+  docker compose pull
+  docker compose up -d
+"
+'''
         }
     }
+}
 
     post {
         success {
