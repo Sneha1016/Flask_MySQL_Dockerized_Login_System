@@ -98,8 +98,10 @@ pipeline {
                                 --security-group-ids sg-053b498bb18d4d57a \
                                 --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Flask-App-EC2}]' \
                                 --user-data '#!/bin/bash
+--user-data '#!/bin/bash
 dnf update -y
 dnf install docker -y
+dnf install awscli -y
 systemctl start docker
 systemctl enable docker
 usermod -aG docker ec2-user
