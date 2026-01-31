@@ -7,7 +7,6 @@ pipeline {
     }
 
     environment {
-
         AWS_REGION     = 'ap-south-1'
         AWS_ACCOUNT_ID = '349036691344'
         REPO_NAME      = 'my-app'
@@ -120,7 +119,6 @@ pipeline {
                         ).trim()
 
                         env.DEPLOY_HOST = "ec2-user@${publicIp}"
-
                         echo "Deploy host = ${env.DEPLOY_HOST}"
                     }
                 }
@@ -131,12 +129,15 @@ pipeline {
             steps {
                 sshagent(credentials: ['ec2-ssh-key']) {
 
+                    // ✅ FIXED PERMISSION ISSUE
                     sh '''
-                      ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} "mkdir -p ${DEPLOY_DIR}"
+                      ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} \
+                      "sudo mkdir -p ${DEPLOY_DIR} && sudo chown ec2-user:ec2-user ${DEPLOY_DIR}"
                     '''
 
                     sh '''
-                      scp -o StrictHostKeyChecking=no demo/docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_DIR}/
+                      scp -o StrictHostKeyChecking=no demo/docker-compose.yml \
+                      ${DEPLOY_HOST}:${DEPLOY_DIR}/
                     '''
 
                     sh '''
